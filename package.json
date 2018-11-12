@@ -4,7 +4,9 @@
   "description": "根据swagger返回的json数据生成api文档或者api.js",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "build": "webpack"
   },
   "keywords": [
     "swagger",
@@ -14,6 +16,9 @@
   ],
   "author": "bantian",
   "license": "MIT",
+  "dependencies": {
+    "swagger-parser-mock": "^1.1.1"
+  },
   "devDependencies": {
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2"
