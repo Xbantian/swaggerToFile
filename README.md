@@ -1,6 +1,10 @@
-根据swagger返回的json数据生成api文档或者api.js文件
-建议下载无脑版分支，不需要安装
+根据swagger返回的json数据生成api文档   
+（免安装版）
 ### 生成步骤
-`yarn`   
-进入src/config配置swaggerurl   
-`yarn start`
+1.打开config配置swaggerurl(获取json数据的那个)  
+2.运行以下任意一条： 
+- `node index`   
+- `npm start`   
+- `yarn start`
+
+3.数据量大时需要等
