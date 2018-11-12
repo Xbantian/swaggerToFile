@@ -6,11 +6,9 @@ const utils = require('./utils');
 // const exec = require('child_process').execSync
 
 
-let configPath = './config.js';
-let configFile = require(configPath);
-console.log(`配置 => ${configPath}`, configFile);
+let configFile = require('./config.js');
+console.log(`配置 => from`, configFile);
 
-// let configFile = { targetUrl: 'http://192.168.50.210:1380/swagger/docs/v1_8_12' }
 let isJava = false;
 let errorUrl = '';//用于全局报错
 console.log('get data from swagger...');
