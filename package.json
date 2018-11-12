@@ -1,0 +1,21 @@
+{
+  "name": "swaggerToFile",
+  "version": "1.0.0",
+  "description": "根据swagger返回的json数据生成api文档或者api.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "swagger",
+    "doc",
+    "api",
+    "js"
+  ],
+  "author": "bantian",
+  "license": "MIT",
+  "devDependencies": {
+    "webpack": "^4.25.1",
+    "webpack-cli": "^3.1.2"
+  }
+}
