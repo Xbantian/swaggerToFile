@@ -349,12 +349,19 @@ let getApi = (conf) => `
 ***
 
 # ${conf.name}
+
 ### 接口说明 :
+
 - ${conf.summary}
+
 ### URL :
+
 - ${conf.url}
+
 ### 请求方式 :
+
 - ${conf.method}
+
 ### 参数 :
 
 |参数名|类型|位置|说明|
@@ -362,7 +369,9 @@ let getApi = (conf) => `
 ${conf.params}
 
 ### 请求示例
+
 ${conf.paramEX}
+
 ### 返回参数说明
 
 |参数名|类型|说明|
@@ -370,5 +379,6 @@ ${conf.paramEX}
 ${conf.res}
 
 ### 返回示例
+
 ${conf.resEX}
 `
