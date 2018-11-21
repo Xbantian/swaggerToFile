@@ -5,17 +5,33 @@ const mkdirp = require('mkdirp');
 
 let stringFilter = (str) => str.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n');
 
-let configFile = require('./config.js');
-console.log(`配置 => from`, configFile);
 
+// let configFile = require('./config.js');
+let { targetUrl, spliceBy = 'tags', functionNameIdx = 3, fileName = 'sis', moduleName = 'sis', fileSuffix = true } = require('./config.js');
+console.log(`配置 => from`, targetUrl);
+
+let isJava = false;
 let errorUrl = '';//用于全局报错
 console.log('get data from swagger...');
-swaggerParser(configFile.targetUrl).then(data => {
-
+swaggerParser(targetUrl).then(data => {
+    // if (data.basePath == '/sisjava') {
+    //     isJava = true;
+    // }
     let dir = path.resolve(__dirname, '');//生成至项目根目录相同位置
+    // let verson = '';
+    // try {
+    //     dir = exec('echo %userprofile%\\desktop').toString().trim();//如果能生成成到桌面最好了
+    // } catch (error) {
+    //     console.log(error);
+    // }
+    // try {
+    //     verson = exec('git symbolic-ref --short -q HEAD').toString().trim();
+    // } catch (error) {
+    //     console.log(error);
+    // }
+    // verson = 'Auto_Api_' + verson;
 
-
-    dir += '\\apiDoc';
+    dir += '\\apiDoc_' + (fileSuffix ? (new Date()).toLocaleString().replace(/\s/g, '-').replace(/\:/g, '') : '');
     mkdirp(dir, (err) => {
         err && console.log(err);
         console.log('apiDoc should create at ' + dir);
@@ -26,41 +42,41 @@ swaggerParser(configFile.targetUrl).then(data => {
             if (Object.prototype.hasOwnProperty.call(data.paths, url)) {
                 errorUrl = url;
                 let api = data.paths[url];
-                let useUrl = url;
-                if (url.match(/\}/)) {
-                    // if (url.endWith('}')) {  //node版本不支持该语法
-                    useUrl = url.replace(/\/\{.*\}/, '');
-                }
-                let urlList = useUrl.split('/')
-                let moduleName = urlList[2];
-                moduleName = moduleName.replace(/(^\w)/, (m) => m.toUpperCase());
-                let funName = '';
+                // let useUrl = url;
+                // if (url.match(/\}/)) {
+                //     // if (url.endWith('}')) {  //node版本不支持该语法
+                //     useUrl = url.replace(/\/\{.*\}/, '');
+                // }
+                let urlList = url.split('/');
 
-                funName = urlList[3];
-                if (!funName) {
-                    funName = urlList[1];
+                let theModuleName = api.get ? api.get.tags[0] : api.post.tags[0];
+                //不切割文件
+                if (spliceBy == 'never') {
+                    theModuleName = moduleName;
                 }
-                //函数名用pascel命名  防止用到前端关键字
-                funName = funName.replace(/(^\w)/, (m) => m.toUpperCase());
+                let funName = urlList[functionNameIdx];
 
-                addList(moduleName, modules, parserNet(api, useUrl, funName));
+                addList(theModuleName, modules, parserNet(api, url, funName));
             }
         }
         for (const name in modules) {
             if (Object.prototype.hasOwnProperty.call(modules, name)) {
                 let fileConfig = {
                     list: modules[name],
-                    moduleName: name + 'Net',
                 };
-                let fileStr = '# ' + fileConfig.moduleName + fileConfig.list.join('');
+                let fileStr = '# ' + name + fileConfig.list.join('');
                 //统一处理字符串
                 fileStr = stringFilter(fileStr);
-                let fileName = toCamelCase(name) + '-api';
-                if (fileName[0] == '-') {
-                    fileName = fileName.substr(1);
+
+                let theFileName = toCamelCase(name) + '-api';
+                if (theFileName[0] == '-') {
+                    theFileName = theFileName.substr(1);
+                }
+                if (spliceBy == 'never') {
+                    theFileName = fileName;
                 }
                 // 写文件
-                fs.writeFile(path.join(dir, fileName + '.md'), fileStr, function (error) {
+                fs.writeFile(path.join(dir, theFileName + '.md'), fileStr, function (error) {
                     error && console.log(error);
                 });
             }
