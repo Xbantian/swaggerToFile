@@ -2,12 +2,12 @@ const swaggerParser = require('swagger-parser-mock');
 const path = require('path');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
-const utils = require('./utils');
-// const exec = require('child_process').execSync
+
+let stringFilter = (str) => str.replace(/\r\n/g, '\n').replace(/\n/g, '\r\n');
 
 
 // let configFile = require('./config.js');
-let { targetUrl, spliceBy = 'tags', functionNameIdx = 3, fileName = 'sis', moduleName = 'sis',fileSuffix=true } = require('./config.js');
+let { targetUrl, spliceBy = 'tags', functionNameIdx = 3, fileName = 'sis', moduleName = 'sis', fileSuffix = true } = require('./config.js');
 console.log(`配置 => from`, targetUrl);
 
 let isJava = false;
@@ -31,7 +31,7 @@ swaggerParser(targetUrl).then(data => {
     // }
     // verson = 'Auto_Api_' + verson;
 
-    dir += '\\apiDoc_' +(fileSuffix? (new Date()).toLocaleString().replace(/\s|\:/g,''):'');
+    dir += '\\apiDoc_' + (fileSuffix ? (new Date()).toLocaleString().replace(/\s/g, '-').replace(/\:/g, '') : '');
     mkdirp(dir, (err) => {
         err && console.log(err);
         console.log('apiDoc should create at ' + dir);
@@ -66,7 +66,7 @@ swaggerParser(targetUrl).then(data => {
                 };
                 let fileStr = '# ' + name + fileConfig.list.join('');
                 //统一处理字符串
-                fileStr = utils.stringFilter(fileStr);
+                fileStr = stringFilter(fileStr);
 
                 let theFileName = toCamelCase(name) + '-api';
                 if (theFileName[0] == '-') {
@@ -135,7 +135,7 @@ function parserNet(api, url, funName) {
             item.desc = '';
         }
     })
-    config.params = config.params.map(pa => pa.name + '|' + pa.type + '|' + pa.place + '|' + pa.desc).join('\r\n');
+    config.params = config.params.map(pa => '|' + pa.name + '|' + pa.type + '|' + pa.place + '|' + pa.desc + '|').join('\r\n');
 
     let parameters = api.parameters;
     if (parameters && parameters[0]) {
@@ -143,7 +143,7 @@ function parserNet(api, url, funName) {
         config.paramEX = config.paramEX.replace(/^/mg, '    ');
     }
     config.res = getResponses(api);
-    config.res = config.res.map(pa => pa.name + '|' + pa.type + '|' + pa.desc).join('\r\n');
+    config.res = config.res.map(pa => '|' + pa.name + '|' + pa.type + '|' + pa.desc + '|').join('\r\n');
     config.resEX = api.responses[200].example;
     config.resEX = config.resEX.replace(/^/mg, '    ');
 
@@ -362,23 +362,39 @@ const typeMap = {
     Object: 'Object',
 }
 let getApi = (conf) => `
+***
+
 # ${conf.name}
-## 接口说明 :
+
+### 接口说明 :
+
 - ${conf.summary}
-## URL :
+
+### URL :
+
 - ${conf.url}
-## 请求方式 :
+
+### 请求方式 :
+
 - ${conf.method}
-## 参数 :
-参数名|类型|位置|说明
------|---|----|---
+
+### 参数 :
+
+|参数名|类型|位置|说明|
+|-----|---|----|---|
 ${conf.params}
-## 请求示例
+
+### 请求示例
+
 ${conf.paramEX}
-## 返回参数说明
-参数名|类型|说明
------|----|---
+
+### 返回参数说明
+
+|参数名|类型|说明|
+|-----|----|---|
 ${conf.res}
-## 返回示例
+
+### 返回示例
+
 ${conf.resEX}
 `
