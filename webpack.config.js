@@ -8,5 +8,7 @@ module.exports = {
     //   }
     node: {
         fs: "empty"
-    }
+    },
+    target: 'node',
+    mode: "production"
 };
