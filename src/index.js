@@ -6,13 +6,14 @@ const utils = require('./utils');
 // const exec = require('child_process').execSync
 
 
-let configFile = require('./config.js');
-console.log(`配置 => from`, configFile);
+// let configFile = require('./config.js');
+let { targetUrl, spliceBy = 'tags', functionNameIdx = 3, fileName = 'sis', moduleName = 'sis',fileSuffix=true } = require('./config.js');
+console.log(`配置 => from`, targetUrl);
 
 let isJava = false;
 let errorUrl = '';//用于全局报错
 console.log('get data from swagger...');
-swaggerParser(configFile.targetUrl).then(data => {
+swaggerParser(targetUrl).then(data => {
     // if (data.basePath == '/sisjava') {
     //     isJava = true;
     // }
@@ -30,7 +31,7 @@ swaggerParser(configFile.targetUrl).then(data => {
     // }
     // verson = 'Auto_Api_' + verson;
 
-    dir += '\\apiDoc';
+    dir += '\\apiDoc_' +(fileSuffix? (new Date()).toLocaleString().replace(/\s|\:/g,''):'');
     mkdirp(dir, (err) => {
         err && console.log(err);
         console.log('apiDoc should create at ' + dir);
@@ -41,50 +42,41 @@ swaggerParser(configFile.targetUrl).then(data => {
             if (Object.prototype.hasOwnProperty.call(data.paths, url)) {
                 errorUrl = url;
                 let api = data.paths[url];
-                let useUrl = url;
-                if (url.match(/\}/)) {
-                    // if (url.endWith('}')) {  //node版本不支持该语法
-                    useUrl = url.replace(/\/\{.*\}/, '');
-                }
-                let urlList = useUrl.split('/')
-                let moduleName = isJava ? urlList[1] : urlList[2];
-                moduleName = moduleName.replace(/(^\w)/, (m) => m.toUpperCase());
-                let funName = '';
-                if (isJava) {
-                    urlList.forEach((u, i) => {
-                        if (i > 1) {
-                            //函数名用pascel命名  防止用到前端关键字
-                            funName += u.replace(/(^\w)/, (m) => m.toUpperCase());
-                        }
-                    });
-                    useUrl = data.basePath + useUrl;
-                } else {
-                    funName = urlList[3];
-                }
-                if (!funName) {
-                    funName = urlList[1];
-                }
-                //函数名用pascel命名  防止用到前端关键字
-                funName = funName.replace(/(^\w)/, (m) => m.toUpperCase());
+                // let useUrl = url;
+                // if (url.match(/\}/)) {
+                //     // if (url.endWith('}')) {  //node版本不支持该语法
+                //     useUrl = url.replace(/\/\{.*\}/, '');
+                // }
+                let urlList = url.split('/');
 
-                addList(moduleName, modules, parserNet(api, useUrl, funName));
+                let theModuleName = api.get ? api.get.tags[0] : api.post.tags[0];
+                //不切割文件
+                if (spliceBy == 'never') {
+                    theModuleName = moduleName;
+                }
+                let funName = urlList[functionNameIdx];
+
+                addList(theModuleName, modules, parserNet(api, url, funName));
             }
         }
         for (const name in modules) {
             if (Object.prototype.hasOwnProperty.call(modules, name)) {
                 let fileConfig = {
                     list: modules[name],
-                    moduleName: name + (isJava ? 'Jar' : 'Net'),
                 };
-                let fileStr = '# ' + fileConfig.moduleName + fileConfig.list.join('');
+                let fileStr = '# ' + name + fileConfig.list.join('');
                 //统一处理字符串
                 fileStr = utils.stringFilter(fileStr);
-                let fileName = toCamelCase(name) + '-api';
-                if (fileName[0] == '-') {
-                    fileName = fileName.substr(1);
+
+                let theFileName = toCamelCase(name) + '-api';
+                if (theFileName[0] == '-') {
+                    theFileName = theFileName.substr(1);
+                }
+                if (spliceBy == 'never') {
+                    theFileName = fileName;
                 }
                 // 写文件
-                fs.writeFile(path.join(dir, fileName + '.md'), fileStr, function (error) {
+                fs.writeFile(path.join(dir, theFileName + '.md'), fileStr, function (error) {
                     error && console.log(error);
                 });
             }
